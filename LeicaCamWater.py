@@ -22,6 +22,7 @@ import time
 import syringepump as Pump
 import valuelogger as log
 
+PUMP_PORT = 'COM4'
 
 application_path = os.path.dirname(__file__)
 
@@ -537,13 +538,13 @@ class mainGUI(QtWidgets.QMainWindow):
         self.setWindowState(QtCore.Qt.WindowMaximized)
         
         
-#        serial_port = serial.Serial("COM11", 9600)
+#        serial_port = serial.Serial(PUMP_PORT, 9600)
 #        print("Port is open")
 #        
 #        except serial.SerialException:
-#          serial.Serial("COM11", 9600).close()
+#          serial.Serial(PUMP_PORT, 9600).close()
 #          print("Port is closed")
-#          serial_port = serial.Serial("COM11",9600)
+#          serial_port = serial.Serial(PUMP_PORT,9600)
 #          print("Port is open again")
         
         #EWH: virtual mode - ignore 
@@ -778,8 +779,8 @@ class mainGUI(QtWidgets.QMainWindow):
         Pump.pump_ser.close()
         if self.CamTh.isRunning():
             self.CamTh.terminate()
-            serial.Serial("COM11", 9600).close()
-            print("Eric closed the COM11 port.")
+            serial.Serial(PUMP_PORT, 9600).close()
+            print("Eric closed the " + PUMP_PORT + " port.")
         event.accept()
 
 

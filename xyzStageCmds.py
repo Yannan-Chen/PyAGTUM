@@ -3,7 +3,7 @@ from zaber.serial import AsciiSerial, AsciiDevice, AsciiCommand, AsciiReply, Asc
 
 import time
 
-
+ZABER_PORT = 'COM3'
 
 class stages:
 
@@ -14,7 +14,7 @@ class stages:
 
     def __init__(self, axis):
 
-        self.port = AsciiSerial("COM4")   #com port identified using Zaber console, which was used to renumber axes too
+        self.port = AsciiSerial(ZABER_PORT)   #com port identified using Zaber console, which was used to renumber axes too
         self.device = [None] * axis
         self.drive = [None] * axis
 

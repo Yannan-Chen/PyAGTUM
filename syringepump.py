@@ -1,7 +1,9 @@
 import serial
 import time
 
-pump_ser = serial.Serial('COM11') # ttyACM1 for Arduino board
+PUMP_PORT = 'COM4'
+
+pump_ser = serial.Serial(PUMP_PORT) # ttyACM1 for Arduino board
 pump_ser.timeout=2
 readOut = 0   #chars waiting from laser range finder
 
