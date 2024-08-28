@@ -22,7 +22,7 @@ import time
 import syringepump as Pump
 import valuelogger as log
 
-PUMP_PORT = 'COM4'
+PUMP_PORT = 'COM1'
 
 application_path = os.path.dirname(__file__)
 

@@ -25,6 +25,11 @@ changes in the GUI.
 
 # Package Imports
 import xyzStageCmds
+
+# Detect stages immediately after importing library to avoid port interferance with other libraries
+# TODO: figure out why and which one is interfering
+Stages = xyzStageCmds.stages(3) # need to specify the number of axes to create
+
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets, uic
 from PIL import ImageQt
@@ -58,7 +63,7 @@ else:
     win=0
 
 #EWH: adding in the stages for the ATUM to move with cutting.
-Stages = xyzStageCmds.stages(3) # need to specify the number of axes to create
+
 
 # # # # # # # # # Logging Classes # # # # # # # # # # 
         
