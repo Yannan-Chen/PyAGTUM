@@ -1,7 +1,7 @@
 import serial
 import time
 
-PUMP_PORT = 'COM1'
+PUMP_PORT = 'COM5'
 
 pump_ser = serial.Serial(PUMP_PORT) # ttyACM1 for Arduino board
 pump_ser.timeout=2

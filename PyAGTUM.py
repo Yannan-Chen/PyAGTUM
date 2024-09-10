@@ -134,7 +134,7 @@ class Offsetlog(log.valuelogger): #EWH - this one might be problematic for virtu
     historylength=5000
     def updateVis(self):
         try: 
-            self.parent.ptOffset.setData(self.timelog,self.valuelog)
+            self.parent.ptOffset.setData(np.array(self.timelog) - self.parent.startTime,self.valuelog)
         except: 
             print("Error: failed to update graph of offset - line 408")
     def datacollector(self,value=None):
@@ -145,7 +145,7 @@ class Offsetlog(log.valuelogger): #EWH - this one might be problematic for virtu
 
 
 class LEICAchopperlog(log.valuelogger):
-    historylength=3000
+    historylength=1500
     upStateStart=[]
     downStateStart=[]
     prev_offset=0
@@ -188,7 +188,7 @@ class LEICAchopperlog(log.valuelogger):
     #EWH: update the value for the graph of synchronization 
     def updateVis(self):
         try:
-            self.parent.ptsyncLEICA_chopper.setData(self.timelog,self.valuelog)
+            self.parent.ptsyncLEICA_chopper.setData(np.array(self.timelog) - self.parent.startTime,self.valuelog)
         except: 
             print("Error: failed to update Leica chopper log graph - line 173")
             
@@ -641,7 +641,7 @@ class LEICAchopperlog(log.valuelogger):
 
 class ATUMchopperlog(log.valuelogger):
     
-    historylength=3000
+    historylength=1500
     upStateStart=[]
     downStateStart=[]
     
@@ -653,7 +653,7 @@ class ATUMchopperlog(log.valuelogger):
     #EWH: updating the value for the graph in the GUI. 
     def updateVis(self):
         try: 
-            self.parent.ptsyncATUM_chopper.setData(self.timelog,self.valuelog)
+            self.parent.ptsyncATUM_chopper.setData(np.array(self.timelog) - self.parent.startTime, self.valuelog)
         except: 
             print("Error: failed to update ATUMchopper log graph - line 765")
 
@@ -708,7 +708,6 @@ class ATUMchopperlog(log.valuelogger):
         virtual_counter_ATUM += 1
        #print(f"Chopper Signal for ATUM: {self.chopperSignal}")
             
-        #EWH: Logging the important information from the ATUM regarding positions and cycles. 
         self.updateLog(self.chopperSignal)
         #print("update log 10")
         if self.valuelog.__len__()<2:
@@ -1011,7 +1010,7 @@ class mainGUI(QtWidgets.QMainWindow):
 
     #EWH: function called when starting the Leica and ATUM together
     def StartCams(self):
-
+        self.startTime = time.time()
         if self.unit_test == False:
             Atum.Start()
 
@@ -1022,38 +1021,96 @@ class mainGUI(QtWidgets.QMainWindow):
  #       self.sbx_tapeSpeed.setValue(v)
         self.setTapeSpeed()
 
-        self.retractspeedlog.start()
-        self.ATUMchopperlog.start()
-        self.LEICAchopperlog.start()
+	# 09-10-2024 YC: directly set up threads here instead of start through class to avoid complicated logic
+        #self.retractspeedlog.start()
+        self.retractspeedThread = QtCore.QTimer()
+        self.retractspeedThread.timeout.connect(self.retractspeedlog.datacollector)
+        self.retractspeedThread.start(self.retractspeedlog.timeout)
 
-        self.ATUMslotdurationlog.start()
-        self.ATUMinterslotdurationlog.start()
-        self.LEICAretractdurationlog.start()
-        self.LEICAcutdurationlog.start()
+        #self.ATUMchopperlog.start()
+        self.ATUMchopperThread = QtCore.QTimer()
+        self.ATUMchopperThread.timeout.connect(self.ATUMchopperlog.datacollector)
+        self.ATUMchopperThread.start(self.ATUMchopperlog.timeout)
+        
+        #self.LEICAchopperlog.start()
+        self.LEICAchopperThread = QtCore.QTimer()
+        self.LEICAchopperThread.timeout.connect(self.LEICAchopperlog.datacollector)
+        self.LEICAchopperThread.start(self.LEICAchopperlog.timeout)
 
-        self.tapespeedlog.start()
-        self.TapeSpeedDifflog.start()
-        self.Offsetlog.start()
-        self.ATUMcyledurationlog.start()
+        #self.ATUMslotdurationlog.start()
+        self.ATUMslotdurationThread = QtCore.QTimer()
+        self.ATUMslotdurationThread.timeout.connect(self.ATUMslotdurationlog.datacollector)
+        self.ATUMslotdurationThread.start(self.ATUMslotdurationlog.timeout)
+
+        #self.ATUMinterslotdurationlog.start()
+        self.ATUMinterslotdurationThread = QtCore.QTimer()
+        self.ATUMinterslotdurationThread.timeout.connect(self.ATUMinterslotdurationlog.datacollector)
+        self.ATUMinterslotdurationThread.start(self.ATUMinterslotdurationlog.timeout)
+
+        #self.LEICAretractdurationlog.start()
+        self.LEICAretractdurationThread = QtCore.QTimer()
+        self.LEICAretractdurationThread.timeout.connect(self.LEICAretractdurationlog.datacollector)
+        self.LEICAretractdurationThread.start(self.LEICAretractdurationlog.timeout)
+
+        #self.LEICAcutdurationlog.start()
+        self.LEICAcutdurationThread = QtCore.QTimer()
+        self.LEICAcutdurationThread.timeout.connect(self.LEICAcutdurationlog.datacollector)
+        self.LEICAcutdurationThread.start(self.LEICAcutdurationlog.timeout)
+
+        #self.tapespeedlog.start()
+        self.tapespeedThread = QtCore.QTimer()
+        self.tapespeedThread.timeout.connect(self.tapespeedlog.datacollector)
+        self.tapespeedThread.start(self.tapespeedlog.timeout)
+
+        #self.TapeSpeedDifflog.start()
+        self.TapeSpeedDiffThread = QtCore.QTimer()
+        self.TapeSpeedDiffThread.timeout.connect(self.TapeSpeedDifflog.datacollector)
+        self.TapeSpeedDiffThread.start(self.TapeSpeedDifflog.timeout)
+
+        #self.Offsetlog.start()
+        self.OffsetThread = QtCore.QTimer()
+        self.OffsetThread.timeout.connect(self.Offsetlog.datacollector)
+        self.OffsetThread.start(self.Offsetlog.timeout)
+
+        #self.ATUMcyledurationlog.start()
+        self.ATUMcyledurationThread = QtCore.QTimer()
+        self.ATUMcyledurationThread.timeout.connect(self.ATUMcyledurationlog.datacollector)
+        self.ATUMcyledurationThread.start(self.ATUMcyledurationlog.timeout)
+
 
     #EWH: function for stopping the Leica and ATUM together.
     def StopCams(self):
         print("stopped cameras")
         if self.unit_test == False: 
             Atum.Stop()
-        self.retractspeedlog.stopLog()
-        self.ATUMchopperlog.stopLog()
-        self.LEICAchopperlog.stopLog()
 
-        self.ATUMslotdurationlog.stopLog()
-        self.ATUMinterslotdurationlog.stopLog()
-        self.LEICAretractdurationlog.stopLog()
-        self.LEICAcutdurationlog.stopLog()
+        self.retractspeedThread.stop()
+        self.retractspeedThread.deleteLater()
+        self.ATUMchopperThread.stop()
+        self.ATUMchopperThread.deleteLater()
+        self.ATUMchopperlog.timelog=[]; self.ATUMchopperlog.valuelog=[] 
+        self.LEICAchopperThread.stop()
+        self.LEICAchopperThread.deleteLater()
+        self.LEICAchopperlog.timelog=[]; self.LEICAchopperlog.valuelog=[]  
 
-        self.tapespeedlog.stopLog()
-        self.TapeSpeedDifflog.stopLog()
-        self.Offsetlog.stopLog()
-        self.ATUMcyledurationlog.stopLog()
+        self.ATUMslotdurationThread.stop()
+        self.ATUMslotdurationThread.deleteLater()
+        self.ATUMinterslotdurationThread.stop()
+        self.ATUMinterslotdurationThread.deleteLater()
+        self.LEICAretractdurationThread.stop()
+        self.LEICAretractdurationThread.deleteLater()
+        self.LEICAcutdurationThread.stop()
+        self.LEICAcutdurationThread.deleteLater()
+
+
+        self.tapespeedThread.stop()
+        self.tapespeedThread.deleteLater()
+        self.TapeSpeedDiffThread.stop()
+        self.TapeSpeedDiffThread.deleteLater()
+        self.OffsetThread.stop()
+        self.OffsetThread.deleteLater()
+        self.ATUMcyledurationThread.stop()
+        self.ATUMcyledurationThread.deleteLater()
     
     #EWH: start Leica
     def StartCut(self):
